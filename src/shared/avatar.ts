@@ -68,19 +68,7 @@ export function drawAvatar(ctx: Ctx, a: Avatar, cx: number, cy: number, s: numbe
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  if (opts.body) {
-    ctx.fillStyle = skin;
-    ctx.fillRect(cx - s * 0.09, cy + ry * 0.7, s * 0.18, s * 0.25);
-    ctx.fillStyle = SHIRTS[a.shirt] ?? SHIRTS[0];
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + ry + s * 0.42, s * 0.46, s * 0.4, 0, Math.PI, 0);
-    ctx.lineTo(cx + s * 0.46, cy + ry + s * 0.62);
-    ctx.lineTo(cx - s * 0.46, cy + ry + s * 0.62);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(0,0,0,0.08)";
-    ctx.lineWidth = line;
-    ctx.stroke();
-  }
+  if (opts.body) drawShoulders(ctx, a, cx, cy, s, ry);
 
   // Long styles have hair behind the head.
   ctx.fillStyle = hair;
@@ -130,6 +118,102 @@ export function drawAvatar(ctx: Ctx, a: Avatar, cx: number, cy: number, s: numbe
   drawMouth(ctx, a.mouth, cx, cy + s * 0.24, s);
   drawHairFront(ctx, a.hair, cx, cy, rx, ry, s, hair);
 
+  ctx.restore();
+}
+
+/** Neck, shoulders and shirt, under a head centred on (cx, cy). */
+function drawShoulders(ctx: Ctx, a: Avatar, cx: number, cy: number, s: number, ry: number) {
+  ctx.fillStyle = SKINS[a.skin] ?? SKINS[0];
+  ctx.fillRect(cx - s * 0.09, cy + ry * 0.7, s * 0.18, s * 0.25);
+  ctx.fillStyle = SHIRTS[a.shirt] ?? SHIRTS[0];
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + ry + s * 0.42, s * 0.46, s * 0.4, 0, Math.PI, 0);
+  ctx.lineTo(cx + s * 0.46, cy + ry + s * 0.62);
+  ctx.lineTo(cx - s * 0.46, cy + ry + s * 0.62);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.08)";
+  ctx.lineWidth = Math.max(1, s * 0.025);
+  ctx.stroke();
+}
+
+/**
+ * The same avatar seen from behind: back of the head, ears and shoulders.
+ * Used where the camera sits behind the player, like in a kart.
+ */
+export function drawAvatarBack(ctx: Ctx, a: Avatar, cx: number, cy: number, s: number) {
+  const skin = SKINS[a.skin] ?? SKINS[0];
+  const hair = HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0];
+  const rx = [0.42, 0.37, 0.47][a.face] * s;
+  const ry = [0.48, 0.52, 0.45][a.face] * s;
+
+  const head = (grow = 1) => {
+    ctx.beginPath();
+    if (a.face === 2) ctx.roundRect(cx - rx * grow, cy - ry * grow, rx * 2 * grow, ry * 2 * grow, rx * 0.75 * grow);
+    else ctx.ellipse(cx, cy, rx * grow, ry * grow, 0, 0, Math.PI * 2);
+  };
+
+  ctx.save();
+  drawShoulders(ctx, a, cx, cy, s, ry);
+
+  ctx.fillStyle = skin;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.ellipse(cx + side * rx * 0.98, cy + s * 0.04, s * 0.07, s * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  head();
+  ctx.fill();
+
+  if (a.hair !== 0) {
+    ctx.fillStyle = hair;
+    // Hair covers the back of the head down to the nape, curving up at the sides.
+    const nape = cy + ry * 0.5;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(cx - rx * 1.3, cy - ry * 1.6);
+    ctx.lineTo(cx + rx * 1.3, cy - ry * 1.6);
+    ctx.lineTo(cx + rx * 1.3, nape - ry * 0.25);
+    ctx.quadraticCurveTo(cx, nape + ry * 0.2, cx - rx * 1.3, nape - ry * 0.25);
+    ctx.closePath();
+    ctx.clip();
+    head(1.05);
+    ctx.fill();
+    ctx.restore();
+
+    if (a.hair === 3) {
+      // bob: down to the jaw all round
+      ctx.beginPath();
+      ctx.roundRect(cx - rx * 1.1, cy - ry * 0.4, rx * 2.2, ry * 1.25, [0, 0, rx * 0.5, rx * 0.5]);
+      ctx.fill();
+    } else if (a.hair === 6) {
+      // long: past the shoulders
+      ctx.beginPath();
+      ctx.roundRect(cx - rx * 1.1, cy - ry * 0.4, rx * 2.2, ry * 2.1, [0, 0, rx * 0.4, rx * 0.4]);
+      ctx.fill();
+    } else if (a.hair === 4) {
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const x = cx + rx * (-0.6 + i * 0.4);
+        ctx.moveTo(x - rx * 0.22, cy - ry * 0.85);
+        ctx.lineTo(x + rx * 0.05, cy - ry * 1.22);
+        ctx.lineTo(x + rx * 0.22, cy - ry * 0.85);
+      }
+      ctx.fill();
+    } else if (a.hair === 5) {
+      ctx.beginPath();
+      ctx.arc(cx, cy - ry - s * 0.06, s * 0.13, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // a soft parting line so it reads as the back, not a blank shape
+    ctx.strokeStyle = "rgba(0,0,0,0.12)";
+    ctx.lineWidth = Math.max(1, s * 0.02);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - ry * 0.95);
+    ctx.quadraticCurveTo(cx + rx * 0.08, cy - ry * 0.3, cx, cy + ry * 0.3);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 

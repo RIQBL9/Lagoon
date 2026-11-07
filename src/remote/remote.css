@@ -20,6 +20,8 @@ html,
 body {
   margin: 0;
   height: 100%;
+  /* the height actually visible, browser bars excluded */
+  --h: 1vh;
   background: var(--bg);
   overflow: hidden;
   overscroll-behavior: none;
@@ -35,6 +37,15 @@ button {
   touch-action: none;
 }
 
+@supports (height: 1dvh) {
+  html,
+  body {
+    --h: 1dvh;
+  }
+}
+
+/* Everything on the remote scales with the visible height, so B at the bottom
+   always fits, from a small Android to a phone with Safari's bars showing. */
 .remote {
   position: absolute;
   inset: max(14px, env(safe-area-inset-top)) 50% max(14px, env(safe-area-inset-bottom));
@@ -43,8 +54,9 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4vh;
-  padding: 18px 22px 22px;
+  justify-content: space-between;
+  gap: clamp(4px, calc(var(--h) * 1.6), 26px);
+  padding: clamp(10px, calc(var(--h) * 2.2), 18px) 22px clamp(12px, calc(var(--h) * 2.6), 22px);
   background: var(--shell);
   border: 1px solid var(--line);
   border-radius: 56px 56px 44px 44px;
@@ -121,8 +133,8 @@ button {
 
 .dpad {
   display: grid;
-  grid-template: repeat(3, 44px) / repeat(3, 44px);
-  margin-top: 2vh;
+  --key: clamp(32px, calc(var(--h) * 6.4), 46px);
+  grid-template: repeat(3, var(--key)) / repeat(3, var(--key));
 }
 
 .dpad [data-btn="up"] { grid-area: 1 / 2; border-radius: 10px 10px 4px 4px; }
@@ -137,8 +149,9 @@ button {
 }
 
 .a {
-  width: 84px;
-  height: 84px;
+  flex: none;
+  width: clamp(58px, calc(var(--h) * 11), 88px);
+  height: clamp(58px, calc(var(--h) * 11), 88px);
   border-radius: 50%;
   font-size: 30px;
   font-weight: 800;
@@ -151,8 +164,8 @@ button {
 }
 
 .small {
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, calc(var(--h) * 5.4), 42px);
+  height: clamp(32px, calc(var(--h) * 5.4), 42px);
   border-radius: 50%;
   font-size: 22px;
   font-weight: 800;
@@ -168,12 +181,12 @@ button {
 .nums {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(6px, calc(var(--h) * 1.6), 14px);
 }
 
 .num {
-  width: 56px;
-  height: 56px;
+  width: clamp(40px, calc(var(--h) * 7.4), 58px);
+  height: clamp(40px, calc(var(--h) * 7.4), 58px);
   border-radius: 50%;
   font-size: 20px;
   font-weight: 800;
@@ -182,6 +195,7 @@ button {
 .hint {
   margin: 0;
   min-height: 2.6em;
+  line-height: 1.3;
   font-size: 13px;
   text-align: center;
   color: var(--soft);
@@ -192,12 +206,19 @@ button {
 }
 
 .b {
-  margin-top: auto;
+  flex: none;
   width: 100%;
-  height: 72px;
+  height: clamp(52px, calc(var(--h) * 10), 76px);
   border-radius: 24px;
   font-size: 24px;
   font-weight: 800;
+}
+
+/* On short screens the tip line gives up its space first. */
+@media (max-height: 620px) {
+  .hint {
+    display: none;
+  }
 }
 
 .b small {
@@ -215,7 +236,8 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
+  overflow-y: auto;
   gap: 18px;
   padding: 24px;
   background: var(--bg);
@@ -406,4 +428,50 @@ button {
 .ghost {
   background: var(--shell);
   border: 1px solid var(--line) !important;
+}
+
+/* Phone turned sideways: too short to stack everything, so the remote goes
+   wide. D-pad and A on the left, the small buttons in the middle, 1 and 2 on
+   the right, and B across the bottom. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .remote {
+    width: min(640px, calc(100vw - 32px));
+    display: grid;
+    grid-template:
+      "top  top  top" auto
+      "dpad a    nums" 1fr
+      "dpad row  nums" auto
+      "b    b    b" auto
+      / 1fr 1fr 1fr;
+    place-items: center;
+    gap: clamp(4px, calc(var(--h) * 2), 14px) 12px;
+    border-radius: 36px;
+  }
+
+  .top { grid-area: top; }
+  .dpad { grid-area: dpad; --key: clamp(30px, calc(var(--h) * 11), 44px); }
+  .a {
+    grid-area: a;
+    width: clamp(54px, calc(var(--h) * 18), 80px);
+    height: clamp(54px, calc(var(--h) * 18), 80px);
+  }
+  .row { grid-area: row; }
+  .small {
+    width: clamp(30px, calc(var(--h) * 9), 40px);
+    height: clamp(30px, calc(var(--h) * 9), 40px);
+  }
+  .nums { grid-area: nums; flex-direction: row; gap: 14px; }
+  .num {
+    width: clamp(40px, calc(var(--h) * 13), 56px);
+    height: clamp(40px, calc(var(--h) * 13), 56px);
+  }
+  .b {
+    grid-area: b;
+    height: clamp(44px, calc(var(--h) * 14), 64px);
+  }
+  .b small { display: inline; margin-left: 8px; }
+  .hint { display: none; }
+
+  .gate { gap: 10px; }
+  .gate img { width: 52px; height: 52px; }
 }

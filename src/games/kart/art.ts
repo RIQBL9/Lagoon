@@ -1,4 +1,4 @@
-import { drawAvatar, type Avatar } from "../../shared/avatar";
+import { drawAvatarBack, type Avatar } from "../../shared/avatar";
 import { C, rr } from "../../tv/draw";
 import type { Prop } from "./track";
 
@@ -120,8 +120,9 @@ export function drawKart(ctx: Ctx, x: number, y: number, w: number, color: strin
   ctx.ellipse(0, bounce, w * 0.55, w * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // driver first, so the body hides their lower half
-  drawAvatar(ctx, driver, steer * w * 0.03, -w * 0.68, w * 0.4, { body: true });
+  // Driver first, so the body hides their lower half. We're behind the kart,
+  // so we see the back of their head.
+  drawAvatarBack(ctx, driver, steer * w * 0.03, -w * 0.68, w * 0.4);
 
   // seat back
   rr(ctx, -w * 0.24, -w * 0.48, w * 0.48, w * 0.2, w * 0.06);
