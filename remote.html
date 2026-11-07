@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#e9edf0" />
+    <title>Lagoon Remote</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="remote" aria-label="Remote">
+      <header class="top">
+        <div class="leds" aria-label="Player">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <div class="tools">
+          <button class="centre" id="me" type="button">Me</button>
+          <button class="centre" id="centre" type="button">Centre</button>
+        </div>
+      </header>
+
+      <div class="dpad">
+        <button data-btn="up" aria-label="Up"></button>
+        <button data-btn="left" aria-label="Left"></button>
+        <span class="hub"></span>
+        <button data-btn="right" aria-label="Right"></button>
+        <button data-btn="down" aria-label="Down"></button>
+      </div>
+
+      <button data-btn="a" class="a">A</button>
+
+      <div class="row">
+        <button data-btn="minus" class="small" aria-label="Minus">−</button>
+        <button data-btn="home" class="small home" aria-label="Home">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" fill="currentColor" />
+          </svg>
+        </button>
+        <button data-btn="plus" class="small" aria-label="Plus">+</button>
+      </div>
+
+      <div class="nums">
+        <button data-btn="one" class="num">1</button>
+        <button data-btn="two" class="num">2</button>
+      </div>
+
+      <p class="hint" id="hint">Point at the screen. If the pointer drifts, aim at the middle and tap Centre.</p>
+
+      <button data-btn="b" class="b">B <small>hold to grip</small></button>
+    </main>
+
+    <section class="gate" id="gate">
+      <img src="/brand/lagoon-mark.svg" width="88" height="88" alt="" />
+      <h1>Lagoon Remote</h1>
+      <label class="code">
+        <span>Room code</span>
+        <input id="room" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+      </label>
+      <button id="connect" type="button">Connect</button>
+      <p id="status" role="status"></p>
+    </section>
+
+    <section class="setup hidden" id="setup" aria-label="Player setup">
+      <h1>Make your player</h1>
+      <canvas id="preview" aria-hidden="true"></canvas>
+      <input id="name" maxlength="10" placeholder="Your name" autocomplete="off" spellcheck="false" />
+      <div class="pickers" id="pickers"></div>
+      <div class="actions">
+        <button id="shuffle" type="button" class="ghost">Surprise me</button>
+        <button id="ready" type="button">Ready</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/remote/main.ts"></script>
+  </body>
+</html>
