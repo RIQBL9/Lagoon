@@ -6,7 +6,7 @@ import { SHIRTS, drawAvatar } from "../../shared/avatar";
 import { C, panel, rr, text } from "../../tv/draw";
 import type { Swing } from "../../tv/input";
 import { H, W } from "../../tv/screen";
-import { Hotspots, drawButton, hotspot } from "../../tv/ui";
+import { Hotspots, isDirection, drawButton, hotspot } from "../../tv/ui";
 import type { GameHost, GameSession } from "../types";
 import { frameMarks, frameTotals } from "./score";
 import {
@@ -117,6 +117,7 @@ export class Bowling implements GameSession {
         break;
       case "over":
         if (down && id === "a") this.spots.press();
+        else if (down && isDirection(id)) this.spots.move(id);
         break;
     }
   }

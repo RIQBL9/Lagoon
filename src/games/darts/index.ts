@@ -6,7 +6,7 @@ import { SHIRTS, drawAvatar } from "../../shared/avatar";
 import { C, backdrop, panel, text, tileLabel } from "../../tv/draw";
 import type { Swing } from "../../tv/input";
 import { H, W } from "../../tv/screen";
-import { Hotspots, drawButton, hotspot } from "../../tv/ui";
+import { Hotspots, isDirection, drawButton, hotspot } from "../../tv/ui";
 import type { LagoonGame, GameHost, GameSession } from "../types";
 
 type Ctx = CanvasRenderingContext2D;
@@ -169,6 +169,7 @@ class Darts implements GameSession {
   button(id: ButtonId, down: boolean, p: number) {
     if (p !== 1) return;
     if (id === "b") this.gripping = down;
+    if (down && this.phase === "over" && isDirection(id)) return this.spots.move(id);
     if (!down || id !== "a") return;
     if (this.phase === "title") this.start();
     else if (this.phase === "aim") this.throwDart(IDEAL_POWER, 0);

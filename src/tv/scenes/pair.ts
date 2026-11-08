@@ -9,7 +9,7 @@ import { netStatus, newRoom, players, remoteUrl, room } from "../net";
 import { avatarFor } from "../players";
 import { drawAvatar } from "../../shared/avatar";
 import { H, W } from "../screen";
-import { Hotspots, drawButton, hotspot } from "../ui";
+import { Hotspots, isDirection, drawButton, hotspot } from "../ui";
 import { Menu } from "./menu";
 
 /** Shows the QR code and room code for connecting phones. */
@@ -68,8 +68,10 @@ export class Pair implements Scene {
   }
 
   button(id: ButtonId, down: boolean) {
-    if (down && id === "a") this.spots.press();
-    if (down && id === "b") this.leave();
+    if (!down) return;
+    if (id === "a") this.spots.press();
+    else if (id === "b") this.leave();
+    else if (isDirection(id)) this.spots.move(id);
   }
 
   hovering() {

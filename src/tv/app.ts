@@ -8,7 +8,7 @@ import { isHeld, pointer, pointers, setSink, type Swing } from "./input";
 import { players } from "./net";
 import { persist, save } from "./save";
 import { beginFrame, ctx, endFrame, H, W } from "./screen";
-import { Hotspots, drawButton, hotspot } from "./ui";
+import { Hotspots, isDirection, drawButton, hotspot } from "./ui";
 
 export interface Scene {
   /** Song to play while this scene is up. Leave undefined to keep whatever is playing. */
@@ -187,6 +187,7 @@ export function start(first: Scene, homeScene: () => Scene) {
       if (pause.open) {
         if (!down || p !== 1) return;
         if (id === "a") pause.spots.press();
+        else if (isDirection(id)) pause.spots.move(id);
         else if (id === "home" || id === "b") closePause();
         return;
       }

@@ -5,7 +5,7 @@ import { kartSong } from "../../audio/songs";
 import { engineSound, sfx } from "../../audio/sfx";
 import { C, panel, text } from "../../tv/draw";
 import { H, W } from "../../tv/screen";
-import { Hotspots, drawButton, hotspot } from "../../tv/ui";
+import { Hotspots, isDirection, drawButton, hotspot } from "../../tv/ui";
 import type { GameHost, GameSession } from "../types";
 import { KART_W, PROP_WIDTH, drawKart, drawProp } from "./art";
 import { ROAD_W, SEG, buildTrack, type Segment } from "./track";
@@ -141,7 +141,9 @@ export class Race implements GameSession {
   }
 
   button(id: ButtonId, down: boolean, p: number) {
-    if (p !== 1 || !down || id !== "a") return;
+    if (p !== 1 || !down) return;
+    if (this.phase === "over" && isDirection(id)) return this.spots.move(id);
+    if (id !== "a") return;
     if (this.phase === "title") this.start();
     else if (this.phase === "over") this.spots.press();
   }
@@ -226,7 +228,8 @@ export class Race implements GameSession {
     else if (this.host.isHeld("right")) steer = 1;
     else {
       const ptr = this.host.pointer(1);
-      if (ptr.visible) steer = clamp((ptr.x - W / 2) / (W * 0.28), -1, 1);
+      // Turning hard sends a phone's pointer off the screen, which must still count as full lock.
+      if (ptr.visible || ptr.remote) steer = clamp((ptr.x - W / 2) / (W * 0.28), -1, 1);
     }
     if (!racing) steer = clamp(-me.offset, -0.3, 0.3);
     this.steer = approach(this.steer, steer, 0.3, dt);

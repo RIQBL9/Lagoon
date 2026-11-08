@@ -10,7 +10,7 @@ import { pointer } from "../input";
 import { rumble } from "../net";
 import { persist, save } from "../save";
 import { H, W } from "../screen";
-import { Hotspots, chip, drawButton, hotspot, type Hotspot } from "../ui";
+import { Hotspots, isDirection, chip, drawButton, hotspot, type Hotspot } from "../ui";
 import { Menu } from "./menu";
 
 type Ctx = CanvasRenderingContext2D;
@@ -137,7 +137,8 @@ export class Shop implements Scene {
   button(id: ButtonId, down: boolean) {
     if (!down) return;
     if (id === "a") this.spots.press();
-    if (id === "b") {
+    else if (isDirection(id)) this.spots.move(id);
+    else if (id === "b") {
       if (this.modal && this.modal.kind !== "installing") this.close();
       else if (!this.modal) this.back.press();
     }

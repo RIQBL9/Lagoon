@@ -125,9 +125,12 @@ No phone handy? The mouse and keyboard stand in for player 1:
 | Swing | Hold right click and flick the mouse up |
 | D-pad | Arrow keys |
 | Home | Esc or H |
+| − / + | − / = |
 | 1 / 2 | 1 / 2 |
 
-In Lagoon Kart, the arrow keys also steer.
+On every menu the D-pad moves the highlight, so you can get around without
+pointing. In Avatar Studio, − and + flip between the Face, Hair and other
+tabs. In Lagoon Kart, the arrow keys also steer.
 
 Only testing on the computer? `npm run dev:http` skips HTTPS and the
 certificate warning (phones can't use motion controls in that mode).

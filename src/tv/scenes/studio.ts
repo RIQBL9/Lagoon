@@ -17,7 +17,7 @@ import { C, backdrop, noShadow, panel, rr, softShadow, text } from "../draw";
 import { captureKeyboard, pointer } from "../input";
 import { MAX_AVATARS, activeAvatar, persist, save } from "../save";
 import { H, W } from "../screen";
-import { Hotspots, drawButton, hotspot, type Hotspot } from "../ui";
+import { Hotspots, isDirection, drawButton, hotspot, type Hotspot } from "../ui";
 import { Menu } from "./menu";
 
 type Ctx = CanvasRenderingContext2D;
@@ -165,8 +165,10 @@ export class Studio implements Scene {
       this.spots.press();
     } else if (id === "b") {
       this.leave();
-    } else if (id === "left" || id === "right") {
-      this.tab = (this.tab + (id === "left" ? TABS.length - 1 : 1)) % TABS.length;
+    } else if (isDirection(id)) {
+      this.spots.move(id);
+    } else if (id === "minus" || id === "plus") {
+      this.tab = (this.tab + (id === "minus" ? TABS.length - 1 : 1)) % TABS.length;
       sfx.tick();
       this.rebuild();
     }

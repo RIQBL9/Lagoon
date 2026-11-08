@@ -12,7 +12,7 @@ import { players } from "../net";
 import { avatarFor } from "../players";
 import { persist, save } from "../save";
 import { H, W } from "../screen";
-import { Hotspots, chip, hotspot, type Hotspot } from "../ui";
+import { Hotspots, isDirection, chip, hotspot, type Hotspot } from "../ui";
 import { Pair } from "./pair";
 import { Play } from "./play";
 import { Shop, drawShopIcon } from "./shop";
@@ -115,7 +115,9 @@ export class Menu implements Scene {
   }
 
   button(id: ButtonId, down: boolean) {
-    if (down && id === "a" && !this.opening) this.spots.press();
+    if (!down || this.opening) return;
+    if (id === "a") this.spots.press();
+    else if (isDirection(id)) this.spots.move(id);
   }
 
   hovering() {

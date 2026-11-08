@@ -7,6 +7,8 @@ export interface Pointer {
   y: number;
   roll: number;
   visible: boolean;
+  /** True while a phone is driving it. A phone keeps sending its aim even past the screen edge. */
+  remote: boolean;
 }
 
 export interface Swing {
@@ -25,7 +27,7 @@ export const pointers = new Map<number, Pointer>();
 export const pointer = (p = 1): Pointer => {
   let ptr = pointers.get(p);
   if (!ptr) {
-    ptr = { x: W / 2, y: H / 2, roll: 0, visible: false };
+    ptr = { x: W / 2, y: H / 2, roll: 0, visible: false, remote: false };
     pointers.set(p, ptr);
   }
   return ptr;
@@ -55,6 +57,7 @@ export function fromRemote(msg: ControlInput & { p: number }) {
     ptr.x = msg.x * W;
     ptr.y = msg.y * H;
     ptr.roll = msg.roll;
+    ptr.remote = true;
     ptr.visible = msg.x > -0.1 && msg.x < 1.1 && msg.y > -0.1 && msg.y < 1.1;
   } else if (msg.t === "btn") {
     button(msg.id, msg.down, msg.p);
@@ -69,6 +72,7 @@ export function releaseAll(p: number) {
     if (Number(owner) === p) button(id as ButtonId, false, p);
   }
   pointer(p).visible = false;
+  pointer(p).remote = false;
 }
 
 // Mouse and keyboard stand in for player 1's remote.
@@ -83,6 +87,7 @@ canvas.addEventListener("mousemove", (e) => {
   ptr.y = at.y;
   ptr.roll = 0;
   ptr.visible = true;
+  ptr.remote = false;
 
   // Holding B (right button) and flicking the mouse upward counts as a swing.
   const now = performance.now();
@@ -135,4 +140,9 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => {
   const id = KEYS[e.code];
   if (id) button(id, false, 1);
+});
+
+// Keys released while the window is in the background never send keyup.
+window.addEventListener("blur", () => {
+  for (const key of [...held]) if (key.startsWith("1:")) button(key.slice(2) as ButtonId, false, 1);
 });

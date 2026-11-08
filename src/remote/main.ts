@@ -275,6 +275,8 @@ function press(id: ButtonId, down: boolean) {
   send({ t: "btn", id, down });
 }
 
+const releases: (() => void)[] = [];
+
 for (const el of document.querySelectorAll<HTMLElement>("[data-btn]")) {
   const id = el.dataset.btn as ButtonId;
   let held = false;
@@ -296,7 +298,15 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-btn]")) {
   };
   el.addEventListener("pointerup", release);
   el.addEventListener("pointercancel", release);
+  el.addEventListener("lostpointercapture", release);
+  releases.push(release);
 }
+
+// A notification, the lock button or switching apps can swallow the finger
+// lifting, which would leave the kart's gas held down on the TV.
+const releaseAll = () => releases.forEach((release) => release());
+document.addEventListener("visibilitychange", () => document.hidden && releaseAll());
+addEventListener("blur", releaseAll);
 
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
