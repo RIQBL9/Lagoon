@@ -193,7 +193,7 @@ src/remote/      the phone remote page and its player setup screen
 src/tv/          home menu, avatar studio, shop, cursor, saving
 src/audio/       synth voices, music sequencer, sound effects
 src/games/       one folder per game
-public/brand/    logo files
+public/brand/    logo files, traced from my own drawing in art/island.png
 ```
 
 ## Adding a game

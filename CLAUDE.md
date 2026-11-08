@@ -39,7 +39,8 @@ src/tv/              TV app (index.html)
 src/audio/           Web Audio engine, synth voices, sequencer, songs, sound effects
 src/games/           one folder per game + registry.ts + types.ts
 src/games/kart/      pseudo-3D racer: track.ts (segments), race.ts (physics, AI, render), art.ts
-public/brand/        logo files (SVG + PNG)
+public/brand/        logo files (SVG + PNG), traced from art/island.png
+art/island.png       the owner's hand-drawn island; the logo comes from this
 ```
 
 ## Hosting
