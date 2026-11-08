@@ -4,12 +4,14 @@ import { hasTurn, iceServers } from "../shared/ice";
 import { tvPeerId, type ButtonId, type ToPhone, type ToTv } from "../shared/protocol";
 import { clamp } from "../shared/math";
 import type { Avatar } from "../shared/avatar";
+import { screenAngle, screenRight, tilt } from "./motion";
 import { closeSetup, openSetup, savedProfile } from "./setup";
 
 // How many degrees of turning sweep the pointer across the whole screen.
 const YAW_RANGE = 50;
 const PITCH_RANGE = 34;
 const SWING_START = 13; // m/s², ignores normal hand movement
+const SWING_FULL = 29; // a hard swing; a gentle flick lands near the middle
 const SWING_WINDOW = 160;
 
 const gate = document.getElementById("gate")!;
@@ -42,6 +44,9 @@ function setPlayer(p: number) {
 function useProfile(a: Avatar) {
   profile = a;
   setUp = true;
+  // The player was looking down at the setup screen until now, so take the
+  // sideways middle from the next reading instead of that one.
+  centre = null;
   meBtn.textContent = a.name;
   send({ t: "profile", avatar: a });
 }
@@ -176,7 +181,14 @@ const orient = { alpha: 0, beta: 0, gamma: 0 };
 let hasOrientation = false;
 /** Some Android phones have no compass heading; they steer by tilting instead. */
 let hasHeading = false;
-let centre: { alpha: number; beta: number; gamma: number } | null = null;
+/** Where the phone pointed when it was centred. */
+let centre: { alpha: number; tilt: number } | null = null;
+/**
+ * Up and down is measured from level, not from where the phone was when it
+ * connected: pointing the top of the phone straight ahead is the middle of
+ * the screen. Centre moves it to wherever the phone points.
+ */
+let level = 0;
 let aimX = 0.5;
 let aimY = 0.5;
 let lastSent = "";
@@ -191,10 +203,16 @@ addEventListener("deviceorientation", (e) => {
 });
 
 const turn = (deg: number) => ((deg + 540) % 360) - 180;
+const currentTilt = () => tilt(orient.beta, orient.gamma, screenAngle());
+
+function takeCentre() {
+  centre = { alpha: orient.alpha, tilt: currentTilt() };
+}
 
 function recentre() {
   if (!hasOrientation) return;
-  centre = { alpha: orient.alpha, beta: orient.beta, gamma: orient.gamma };
+  takeCentre();
+  level = orient.beta;
   aimX = aimY = 0.5;
   navigator.vibrate?.(20);
 }
@@ -202,18 +220,17 @@ function recentre() {
 function streamAim() {
   requestAnimationFrame(streamAim);
   if (!player || !hasOrientation) return;
-  // Wherever the phone points when the first reading arrives counts as the
-  // middle of the screen. The Centre button resets it.
-  if (!centre) recentre();
+  if (!centre) takeCentre();
   if (!centre) return;
 
-  const sideways = hasHeading ? -turn(orient.alpha - centre.alpha) : orient.gamma - centre.gamma;
+  const sideways = hasHeading ? -turn(orient.alpha - centre.alpha) : currentTilt() - centre.tilt;
   const x = 0.5 + sideways / YAW_RANGE;
-  const y = 0.5 - (orient.beta - centre.beta) / PITCH_RANGE;
+  const y = 0.5 - (orient.beta - level) / PITCH_RANGE;
   aimX += (clamp(x, -0.15, 1.15) - aimX) * 0.4;
   aimY += (clamp(y, -0.15, 1.15) - aimY) * 0.4;
 
-  const msg = { t: "aim", x: +aimX.toFixed(3), y: +aimY.toFixed(3), roll: Math.round(orient.gamma) } as const;
+  // roll is how far the phone is tipped like a wheel, which Lagoon Kart steers with.
+  const msg = { t: "aim", x: +aimX.toFixed(3), y: +aimY.toFixed(3), roll: Math.round(currentTilt()) } as const;
   const key = `${msg.x},${msg.y},${msg.roll}`;
   if (key !== lastSent) {
     lastSent = key;
@@ -246,7 +263,9 @@ addEventListener("devicemotion", (e) => {
     a = { x: g.x - gravity.x, y: (g.y ?? 0) - gravity.y, z: (g.z ?? 0) - gravity.z };
   }
 
-  const x = a.x ?? 0;
+  // Sideways is measured along the screen, so it still means left and right with the phone turned.
+  const right = screenRight(screenAngle());
+  const x = (a.x ?? 0) * right.x + (a.y ?? 0) * right.y;
   const strength = Math.hypot(x, a.y ?? 0, a.z ?? 0);
   const now = performance.now();
 
@@ -258,7 +277,7 @@ addEventListener("devicemotion", (e) => {
       quietUntil = now + 550;
       send({
         t: "swing",
-        power: +clamp((swingPeak - SWING_START) / 26, 0.05, 1).toFixed(2),
+        power: +clamp((swingPeak - SWING_START) / (SWING_FULL - SWING_START), 0.05, 1).toFixed(2),
         dir: +clamp(swingSide / 45, -1, 1).toFixed(2),
       });
     }

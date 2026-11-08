@@ -27,7 +27,7 @@ it (graphics, sounds, music, games) is made from scratch.
 | --- | --- |
 | **Lagoon Sports: Bowling** | Aim with the pointer, hold B and swing your phone to bowl. Ten frames, real scoring. |
 | **Lagoon Darts** | Point, steady your hand, flick to throw. |
-| **Lagoon Kart** | Three laps of a seaside track against three rivals. Point to steer, hold A to drive. |
+| **Lagoon Kart** | Three laps of a seaside track against three rivals. Tip the phone like a wheel to steer, hold A to drive. |
 | **Avatar Studio** | Build a character from face shapes, eyes, hair and colours. Your avatar shows up in games. |
 | **Your phone** | After scanning the code, every player picks a name and look on their own phone. |
 | **Lagoon Shop** | Spend points you earn in games to unlock new channels. |
@@ -114,6 +114,9 @@ picks another one while nobody is connected.
   mouse play.
 - On iPhone, if you tapped "Don't Allow", close the tab and open the link
   again so it asks you a second time.
+- Hold the phone like a TV remote: screen facing up, top edge pointing at
+  the TV. Level is the middle of the screen. If the pointer sits too high,
+  too low or off to one side, aim at the middle of the TV and tap Centre.
 
 No phone handy? The mouse and keyboard stand in for player 1:
 

@@ -44,7 +44,7 @@ function icon(ctx: CanvasRenderingContext2D, w: number, h: number, t: number) {
 export const kart: LagoonGame = {
   id: "kart",
   title: "Lagoon Kart",
-  blurb: "Three laps of Lagoon Bay. Point to steer, hold A to drive.",
+  blurb: "Three laps of Lagoon Bay. Tip to steer, hold A to drive.",
   price: 500,
   icon,
   create: (host) => new Race(host),

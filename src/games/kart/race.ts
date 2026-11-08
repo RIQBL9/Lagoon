@@ -26,6 +26,8 @@ const OFF_ROAD_LIMIT = MAX / 4;
 const CENTRIFUGAL = 0.3;
 const LAPS = 3;
 const POINTS = [60, 40, 25, 15];
+const TILT_DEAD = 4; // degrees of tip ignored, so a resting hand drives straight
+const TILT_FULL = 30; // degrees past that for full lock
 
 interface Racer {
   avatar: Avatar;
@@ -228,8 +230,9 @@ export class Race implements GameSession {
     else if (this.host.isHeld("right")) steer = 1;
     else {
       const ptr = this.host.pointer(1);
-      // Turning hard sends a phone's pointer off the screen, which must still count as full lock.
-      if (ptr.visible || ptr.remote) steer = clamp((ptr.x - W / 2) / (W * 0.28), -1, 1);
+      // A phone steers like a wheel: tip it right to go right, whichever way it's held.
+      if (ptr.remote) steer = clamp((Math.abs(ptr.roll) < TILT_DEAD ? 0 : ptr.roll - Math.sign(ptr.roll) * TILT_DEAD) / TILT_FULL, -1, 1);
+      else if (ptr.visible) steer = clamp((ptr.x - W / 2) / (W * 0.28), -1, 1);
     }
     if (!racing) steer = clamp(-me.offset, -0.3, 0.3);
     this.steer = approach(this.steer, steer, 0.3, dt);
@@ -570,7 +573,7 @@ export class Race implements GameSession {
     const mouse = this.host.players().length === 0;
     const help = mouse
       ? "Move the mouse to steer. Hold left click to drive, right click to brake."
-      : "Point left and right to steer. Hold A or 2 to drive, B or 1 to brake.";
+      : "Tip your phone like a wheel to steer. Hold A or 2 to drive, B or 1 to brake.";
     panel(ctx, W / 2 - 380, H - 92, 760, 56, 28);
     text(ctx, help, W / 2, H - 63, 18, C.ink, "center", 500);
   }
